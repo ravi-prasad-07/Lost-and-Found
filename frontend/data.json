@@ -1,0 +1,29 @@
+[
+  {
+    "id": 3,
+    "title": "Watch",
+    "description": "Swiss military silver color",
+    "category": "electronics",
+    "status": "found",
+    "location": "lt 202",
+    "report_date": "2026-04-01"
+  },
+  {
+    "id": 2,
+    "title": "Mobile",
+    "description": "Oneplus 11R with burnt oled display",
+    "category": "electronis",
+    "status": "lost",
+    "location": "TCL 4",
+    "report_date": "2026-04-01"
+  },
+  {
+    "id": 1,
+    "title": "Watch",
+    "description": "Swiss military silver watch",
+    "category": "electronics",
+    "status": "lost",
+    "location": "lt 202",
+    "report_date": "2026-04-01"
+  }
+]

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Browse Reports — L&F Portal</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="logo">L&amp;<span>F</span> Portal</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="dashboard.html">Browse Items</a></li>
+    </ul>
+  </nav>
+
+  <div class="section">
+    <div class="section-header">
+      <h2>Campus Reports</h2>
+      <p>All active lost &amp; found reports. Use the Java console app to add new ones.</p>
+    </div>
+
+    <!-- Filters + Search -->
+    <div class="filters">
+      <button class="filter-btn active" onclick="filterItems('all', this)">All</button>
+      <button class="filter-btn" onclick="filterItems('lost', this)">Lost</button>
+      <button class="filter-btn" onclick="filterItems('found', this)">Found</button>
+      <input type="text" id="searchInput" placeholder="🔍 Search items..."
+             oninput="renderItems()" style="margin-left:auto;"/>
+    </div>
+
+    <!-- Items Grid -->
+    <div class="items-grid" id="itemsGrid">
+      <div class="no-items">Loading reports…</div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Lost &amp; Found Portal &nbsp;|&nbsp; <span>Campus PBL Project</span></p>
+  </footer>
+
+  <script>
+    let allItems = [];
+    let activeFilter = 'all';
+
+    // Load from data.json (exported by Java)
+    fetch('data.json')
+      .then(r => r.json())
+      .then(data => {
+        allItems = data;
+        renderItems();
+      })
+      .catch(() => {
+        document.getElementById('itemsGrid').innerHTML =
+          '<div class="no-items">⚠️ Could not load data.json.<br>Make sure the Java app has been run at least once.</div>';
+      });
+
+    function filterItems(type, btn) {
+      activeFilter = type;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderItems();
+    }
+
+    function renderItems() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const grid  = document.getElementById('itemsGrid');
+
+      let filtered = allItems.filter(item => {
+        const matchFilter = activeFilter === 'all' || item.status === activeFilter;
+        const matchSearch = !query ||
+          item.title.toLowerCase().includes(query) ||
+          (item.description || '').toLowerCase().includes(query) ||
+          (item.location || '').toLowerCase().includes(query);
+        return matchFilter && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div class="no-items">No items found matching your search.</div>';
+        return;
+      }
+
+      grid.innerHTML = filtered.map((item, i) => `
+        <div class="item-card" style="animation-delay: ${i * 0.06}s">
+          <span class="badge badge-${item.status}">${item.status.toUpperCase()}</span>
+          <h3>${item.title}</h3>
+          <div class="meta">${item.category} &nbsp;·&nbsp; ${item.report_date}</div>
+          ${item.description ? `<div class="meta" style="margin-top:0.3rem;">${item.description}</div>` : ''}
+          <div class="loc">📍 ${item.location}</div>
+        </div>
+      `).join('');
+    }
+  </script>
+
+</body>
+</html>
