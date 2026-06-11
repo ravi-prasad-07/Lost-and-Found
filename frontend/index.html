@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lost & Found Portal</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="#" class="logo" onclick="showPage('home')">L&amp;<span>F</span> Portal</a>
+    <ul class="nav-links">
+      <li><a href="#" onclick="showPage('home')">Home</a></li>
+      <li><a href="#" onclick="showPage('browse')">Browse Items</a></li>
+      <li id="navReport" style="display:none"><a href="#" onclick="showPage('report')" class="cta">Report Item</a></li>
+      <li id="navAdmin" style="display:none"><a href="#" onclick="showPage('admin')" class="cta" style="background:#7c3aed">Admin</a></li>
+      <li id="navLogout" style="display:none"><a href="#" onclick="logout()" style="color:rgba(255,255,255,0.5)">Logout (<span id="navUser"></span>)</a></li>
+      <li id="navLogin"><a href="#" onclick="showPage('login')" class="cta">Login / Register</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── HOME PAGE ── -->
+  <div id="page-home">
+    <section style="background: var(--bg);">
+      <div class="hero">
+        <div class="fade">
+          <div class="tag">🎓 Campus Lost &amp; Found</div>
+          <h1>Lost something?<br>Found <em>something?</em></h1>
+          <p>Report lost or found items directly from this page — no Java console needed. Register, login, and submit in seconds.</p>
+          <div class="hero-btns">
+            <a href="#" class="btn btn-primary" onclick="showPage('browse')">Browse Reports</a>
+            <a href="#" class="btn btn-outline" onclick="requireLogin('report')">Report an Item</a>
+          </div>
+        </div>
+        <div class="stats-grid fade">
+          <div class="stat-card">
+            <div class="num" id="totalCount">—</div>
+            <div class="lbl">Active Reports</div>
+          </div>
+          <div class="stat-card">
+            <div class="num" id="foundCount">—</div>
+            <div class="lbl">Found Items</div>
+          </div>
+          <div class="stat-card">
+            <div class="num" id="lostCount">—</div>
+            <div class="lbl">Lost Items</div>
+          </div>
+          <div class="stat-card">
+            <div class="num" id="resolvedCount">—</div>
+            <div class="lbl">Resolved</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="how-section">
+      <h2>How It Works</h2>
+      <p>Everything happens right here in the browser — no Java app needed anymore.</p>
+      <div class="steps">
+        <div class="step"><div class="num">01</div><h3>Register</h3><p>Create a free account with your college email.</p></div>
+        <div class="step"><div class="num">02</div><h3>Login</h3><p>Sign in to access the report form.</p></div>
+        <div class="step"><div class="num">03</div><h3>Report Item</h3><p>Fill in the details — lost or found.</p></div>
+        <div class="step"><div class="num">04</div><h3>Get Reunited</h3><p>Browse reports and contact via the portal.</p></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ── BROWSE PAGE ── -->
+  <div id="page-browse" style="display:none">
+    <div class="section">
+      <div class="section-header">
+        <h2>Campus Reports</h2>
+        <p>All active lost &amp; found reports. Login to add new ones.</p>
+      </div>
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterItems('all', this)">All</button>
+        <button class="filter-btn" onclick="filterItems('lost', this)">Lost</button>
+        <button class="filter-btn" onclick="filterItems('found', this)">Found</button>
+        <input type="text" id="searchInput" placeholder="🔍 Search items..." oninput="renderItems()" style="margin-left:auto;"/>
+      </div>
+      <div class="items-grid" id="itemsGrid">
+        <div class="no-items">Loading reports…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LOGIN / REGISTER PAGE ── -->
+  <div id="page-login" style="display:none">
+    <div class="auth-wrap">
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Login</button>
+          <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">Register</button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="formLogin">
+          <h2>Welcome back</h2>
+          <p class="auth-sub">Login to report items</p>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" id="loginEmail" placeholder="you@college.edu"/>
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input type="password" id="loginPassword" placeholder="••••••••"/>
+          </div>
+          <div id="loginError" class="error-msg" style="display:none"></div>
+          <button class="btn btn-primary w-full" onclick="handleLogin()">Login →</button>
+          <p class="auth-hint">Default admin: <b>admin@laf.com</b> / <b>admin123</b></p>
+        </div>
+
+        <!-- Register Form -->
+        <div id="formRegister" style="display:none">
+          <h2>Create Account</h2>
+          <p class="auth-sub">Join the campus portal</p>
+          <div class="field">
+            <label>Full Name</label>
+            <input type="text" id="regName" placeholder="Ravi Kumar"/>
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" id="regEmail" placeholder="you@college.edu"/>
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input type="password" id="regPassword" placeholder="Min 6 characters"/>
+          </div>
+          <div id="regError" class="error-msg" style="display:none"></div>
+          <div id="regSuccess" class="success-msg" style="display:none"></div>
+          <button class="btn btn-primary w-full" onclick="handleRegister()">Register →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── REPORT PAGE ── -->
+  <div id="page-report" style="display:none">
+    <div class="section" style="max-width:620px">
+      <div class="section-header">
+        <h2>Report an Item</h2>
+        <p>Fill in the details below. Your report will be visible instantly.</p>
+      </div>
+      <div class="form-card">
+        <div class="field">
+          <label>Item Title *</label>
+          <input type="text" id="rTitle" placeholder="e.g. Black Leather Wallet"/>
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <textarea id="rDesc" rows="3" placeholder="Color, brand, distinctive features..."></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Category *</label>
+            <select id="rCategory">
+              <option value="">Select…</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Accessories">Accessories</option>
+              <option value="Stationery">Stationery</option>
+              <option value="Clothing">Clothing</option>
+              <option value="ID/Cards">ID / Cards</option>
+              <option value="Keys">Keys</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Status *</label>
+            <select id="rStatus">
+              <option value="lost">I Lost This</option>
+              <option value="found">I Found This</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Location on Campus *</label>
+          <input type="text" id="rLocation" placeholder="e.g. Library 2nd Floor, LT 202"/>
+        </div>
+        <div class="field">
+          <label>Contact Info (optional)</label>
+          <input type="text" id="rContact" placeholder="Phone or email others can reach you at"/>
+        </div>
+        <div id="reportError" class="error-msg" style="display:none"></div>
+        <div id="reportSuccess" class="success-msg" style="display:none"></div>
+        <button class="btn btn-primary" onclick="handleReport()" style="width:100%;margin-top:0.5rem">Submit Report →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ADMIN PAGE ── -->
+  <div id="page-admin" style="display:none">
+    <div class="section">
+      <div class="section-header">
+        <h2>Admin Panel</h2>
+        <p>Manage all reports — resolve or delete items.</p>
+      </div>
+      <div class="admin-tabs">
+        <button class="filter-btn active" onclick="adminFilter('all', this)">All</button>
+        <button class="filter-btn" onclick="adminFilter('lost', this)">Lost</button>
+        <button class="filter-btn" onclick="adminFilter('found', this)">Found</button>
+        <button class="filter-btn" onclick="adminFilter('resolved', this)">Resolved</button>
+      </div>
+      <div class="items-grid" id="adminGrid" style="margin-top:1.5rem">
+        <div class="no-items">Loading…</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Lost &amp; Found Portal &nbsp;|&nbsp; <span>Campus PBL Project</span> &nbsp;|&nbsp; Fully Browser-Based</p>
+  </footer>
+
+  <script>
+    // ══════════════════════════════════════════
+    //  DATA LAYER  (localStorage)
+    // ══════════════════════════════════════════
+
+    function getUsers() {
+      const raw = localStorage.getItem('laf_users');
+      if (!raw) {
+        // seed admin account
+        const admin = [{ id:1, name:'Admin', email:'admin@laf.com', password:'admin123', role:'admin' }];
+        localStorage.setItem('laf_users', JSON.stringify(admin));
+        return admin;
+      }
+      return JSON.parse(raw);
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem('laf_users', JSON.stringify(users));
+    }
+
+    function getItems() {
+      const raw = localStorage.getItem('laf_items');
+      if (!raw) {
+        // seed from original data.json structure
+        const seed = [
+          { id:3, title:'Watch', description:'Swiss military silver color', category:'Electronics', status:'found', location:'LT 202', reportedBy:1, reporterName:'Admin', report_date:'2026-04-01', is_resolved:false, contact:'' },
+          { id:2, title:'Mobile', description:'Oneplus 11R with burnt OLED display', category:'Electronics', status:'lost', location:'TCL 4', reportedBy:1, reporterName:'Admin', report_date:'2026-04-01', is_resolved:false, contact:'' },
+          { id:1, title:'Watch', description:'Swiss military silver watch', category:'Electronics', status:'lost', location:'LT 202', reportedBy:1, reporterName:'Admin', report_date:'2026-04-01', is_resolved:false, contact:'' }
+        ];
+        localStorage.setItem('laf_items', JSON.stringify(seed));
+        return seed;
+      }
+      return JSON.parse(raw);
+    }
+
+    function saveItems(items) {
+      localStorage.setItem('laf_items', JSON.stringify(items));
+    }
+
+    function nextItemId() {
+      const items = getItems();
+      return items.length === 0 ? 1 : Math.max(...items.map(i => i.id)) + 1;
+    }
+
+    // ══════════════════════════════════════════
+    //  SESSION
+    // ══════════════════════════════════════════
+
+    let currentUser = null;
+
+    function loadSession() {
+      const raw = sessionStorage.getItem('laf_session');
+      if (raw) currentUser = JSON.parse(raw);
+      updateNav();
+    }
+
+    function logout() {
+      currentUser = null;
+      sessionStorage.removeItem('laf_session');
+      updateNav();
+      showPage('home');
+    }
+
+    function updateNav() {
+      const loggedIn = !!currentUser;
+      document.getElementById('navLogin').style.display   = loggedIn ? 'none' : '';
+      document.getElementById('navLogout').style.display  = loggedIn ? '' : 'none';
+      document.getElementById('navReport').style.display  = loggedIn ? '' : 'none';
+      document.getElementById('navAdmin').style.display   = (loggedIn && currentUser.role === 'admin') ? '' : 'none';
+      if (loggedIn) document.getElementById('navUser').textContent = currentUser.name.split(' ')[0];
+    }
+
+    function requireLogin(page) {
+      if (!currentUser) { showPage('login'); return; }
+      showPage(page);
+    }
+
+    // ══════════════════════════════════════════
+    //  PAGE ROUTING
+    // ══════════════════════════════════════════
+
+    const pages = ['home','browse','login','report','admin'];
+
+    function showPage(name) {
+      pages.forEach(p => {
+        document.getElementById('page-'+p).style.display = (p === name) ? '' : 'none';
+      });
+      if (name === 'browse')  { renderItems(); updateStats(); }
+      if (name === 'home')    { updateStats(); }
+      if (name === 'admin')   { renderAdmin('all'); }
+      if (name === 'report' && !currentUser) { showPage('login'); return; }
+      window.scrollTo(0,0);
+    }
+
+    // ══════════════════════════════════════════
+    //  AUTH
+    // ══════════════════════════════════════════
+
+    function switchTab(tab) {
+      document.getElementById('formLogin').style.display    = tab === 'login'    ? '' : 'none';
+      document.getElementById('formRegister').style.display = tab === 'register' ? '' : 'none';
+      document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+      document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+    }
+
+    function handleLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const pass  = document.getElementById('loginPassword').value.trim();
+      const err   = document.getElementById('loginError');
+      err.style.display = 'none';
+
+      if (!email || !pass) { showError(err, 'Please fill all fields.'); return; }
+
+      const users = getUsers();
+      const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === pass);
+
+      if (!user) { showError(err, 'Invalid email or password.'); return; }
+
+      currentUser = user;
+      sessionStorage.setItem('laf_session', JSON.stringify(user));
+      updateNav();
+      showPage('home');
+    }
+
+    function handleRegister() {
+      const name  = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const pass  = document.getElementById('regPassword').value.trim();
+      const err   = document.getElementById('regError');
+      const suc   = document.getElementById('regSuccess');
+      err.style.display = 'none';
+      suc.style.display = 'none';
+
+      if (!name || !email || !pass) { showError(err, 'Please fill all fields.'); return; }
+      if (pass.length < 6)          { showError(err, 'Password must be at least 6 characters.'); return; }
+
+      const users = getUsers();
+      if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+        showError(err, 'Email already registered.'); return;
+      }
+
+      const newUser = { id: Date.now(), name, email, password: pass, role: 'student' };
+      users.push(newUser);
+      saveUsers(users);
+
+      suc.textContent = '✅ Registered! You can now login.';
+      suc.style.display = '';
+      document.getElementById('regName').value = '';
+      document.getElementById('regEmail').value = '';
+      document.getElementById('regPassword').value = '';
+      setTimeout(() => switchTab('login'), 1500);
+    }
+
+    // ══════════════════════════════════════════
+    //  REPORT ITEM
+    // ══════════════════════════════════════════
+
+    function handleReport() {
+      if (!currentUser) { showPage('login'); return; }
+
+      const title    = document.getElementById('rTitle').value.trim();
+      const desc     = document.getElementById('rDesc').value.trim();
+      const category = document.getElementById('rCategory').value;
+      const status   = document.getElementById('rStatus').value;
+      const location = document.getElementById('rLocation').value.trim();
+      const contact  = document.getElementById('rContact').value.trim();
+      const err      = document.getElementById('reportError');
+      const suc      = document.getElementById('reportSuccess');
+      err.style.display = 'none';
+      suc.style.display = 'none';
+
+      if (!title || !category || !location) {
+        showError(err, 'Please fill Title, Category, and Location.'); return;
+      }
+
+      const items = getItems();
+      const item = {
+        id: nextItemId(),
+        title, description: desc, category, status, location,
+        reportedBy: currentUser.id,
+        reporterName: currentUser.name,
+        contact,
+        report_date: new Date().toISOString().split('T')[0],
+        is_resolved: false
+      };
+      items.unshift(item);
+      saveItems(items);
+
+      suc.textContent = '✅ Report submitted successfully!';
+      suc.style.display = '';
+      ['rTitle','rDesc','rLocation','rContact'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('rCategory').value = '';
+      document.getElementById('rStatus').value = 'lost';
+    }
+
+    // ══════════════════════════════════════════
+    //  BROWSE
+    // ══════════════════════════════════════════
+
+    let allItems = [];
+    let activeFilter = 'all';
+
+    function filterItems(type, btn) {
+      activeFilter = type;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderItems();
+    }
+
+    function renderItems() {
+      allItems = getItems().filter(i => !i.is_resolved);
+      const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
+      const grid  = document.getElementById('itemsGrid');
+
+      let filtered = allItems.filter(item => {
+        const matchFilter = activeFilter === 'all' || item.status === activeFilter;
+        const matchSearch = !query ||
+          item.title.toLowerCase().includes(query) ||
+          (item.description||'').toLowerCase().includes(query) ||
+          (item.location||'').toLowerCase().includes(query) ||
+          (item.category||'').toLowerCase().includes(query);
+        return matchFilter && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div class="no-items">No items found matching your search.</div>';
+        return;
+      }
+
+      grid.innerHTML = filtered.map((item, i) => `
+        <div class="item-card" style="animation-delay: ${i * 0.05}s">
+          <span class="badge badge-${item.status}">${item.status.toUpperCase()}</span>
+          <h3>${esc(item.title)}</h3>
+          <div class="meta">${esc(item.category)} &nbsp;·&nbsp; ${item.report_date}</div>
+          ${item.description ? `<div class="meta" style="margin-top:0.3rem;">${esc(item.description)}</div>` : ''}
+          <div class="loc">📍 ${esc(item.location)}</div>
+          ${item.contact ? `<div class="loc">📞 ${esc(item.contact)}</div>` : ''}
+          <div class="meta" style="margin-top:0.5rem;font-style:italic;">Reported by ${esc(item.reporterName||'—')}</div>
+        </div>
+      `).join('');
+    }
+
+    // ══════════════════════════════════════════
+    //  ADMIN
+    // ══════════════════════════════════════════
+
+    let adminActiveFilter = 'all';
+
+    function adminFilter(type, btn) {
+      adminActiveFilter = type;
+      document.querySelectorAll('.admin-tabs .filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderAdmin(type);
+    }
+
+    function renderAdmin(type) {
+      const items = getItems();
+      const grid  = document.getElementById('adminGrid');
+
+      let filtered = items.filter(item => {
+        if (type === 'resolved') return item.is_resolved;
+        if (type === 'all')      return !item.is_resolved;
+        return item.status === type && !item.is_resolved;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div class="no-items">No items in this category.</div>';
+        return;
+      }
+
+      grid.innerHTML = filtered.map((item, i) => `
+        <div class="item-card" style="animation-delay:${i*0.04}s; ${item.is_resolved ? 'opacity:0.55;' : ''}">
+          <span class="badge badge-${item.status}">${item.status.toUpperCase()}</span>
+          ${item.is_resolved ? '<span class="badge" style="background:#eef;color:#555;margin-left:4px">RESOLVED</span>' : ''}
+          <h3>${esc(item.title)}</h3>
+          <div class="meta">${esc(item.category)} · ${item.report_date} · ID #${item.id}</div>
+          ${item.description ? `<div class="meta" style="margin-top:0.3rem;">${esc(item.description)}</div>` : ''}
+          <div class="loc">📍 ${esc(item.location)}</div>
+          ${item.contact ? `<div class="loc">📞 ${esc(item.contact)}</div>` : ''}
+          <div class="meta" style="margin-top:0.4rem;">By: ${esc(item.reporterName||'—')}</div>
+          <div class="admin-actions">
+            ${!item.is_resolved ? `<button class="btn btn-sm btn-resolve" onclick="resolveItem(${item.id})">✅ Resolve</button>` : ''}
+            <button class="btn btn-sm btn-delete" onclick="deleteItem(${item.id})">🗑 Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function resolveItem(id) {
+      const items = getItems();
+      const idx = items.findIndex(i => i.id === id);
+      if (idx !== -1) { items[idx].is_resolved = true; saveItems(items); }
+      renderAdmin(adminActiveFilter);
+      updateStats();
+    }
+
+    function deleteItem(id) {
+      if (!confirm('Delete this report permanently?')) return;
+      const items = getItems().filter(i => i.id !== id);
+      saveItems(items);
+      renderAdmin(adminActiveFilter);
+      updateStats();
+    }
+
+    // ══════════════════════════════════════════
+    //  STATS
+    // ══════════════════════════════════════════
+
+    function updateStats() {
+      const items = getItems();
+      const active = items.filter(i => !i.is_resolved);
+      document.getElementById('totalCount').textContent   = active.length;
+      document.getElementById('foundCount').textContent   = active.filter(i => i.status==='found').length;
+      document.getElementById('lostCount').textContent    = active.filter(i => i.status==='lost').length;
+      document.getElementById('resolvedCount').textContent = items.filter(i => i.is_resolved).length;
+    }
+
+    // ══════════════════════════════════════════
+    //  UTILS
+    // ══════════════════════════════════════════
+
+    function esc(str) {
+      if (!str) return '';
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function showError(el, msg) {
+      el.textContent = msg;
+      el.style.display = '';
+    }
+
+    // ── INIT ──
+    loadSession();
+    showPage('home');
+  </script>
+</body>
+</html>
