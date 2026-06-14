@@ -162,7 +162,7 @@ This project helped us understand:
 
 * Ravi Kumar
 * Sanjay Rawat
-* Saloni Gupta
+* @salonig405-hub
 * Shriyansh Negi
 
 ---
